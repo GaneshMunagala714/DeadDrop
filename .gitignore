@@ -1,0 +1,10 @@
+node_modules/
+cre-templates/
+dist/
+.env
+*.env
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+simulation-output.txt

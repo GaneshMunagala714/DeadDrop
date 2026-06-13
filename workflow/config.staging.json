@@ -1,0 +1,15 @@
+{
+  "schedule": "0 * * * *",
+  "claim": "My manager approved $2M in fraudulent invoices over 6 months. Payments routed to shell company registered to his brother-in-law.",
+  "evidenceSummary": "Invoice records show 47 duplicate payments to vendor ID V-2291. Vendor address matches a residential property. No goods or services were delivered.",
+  "employeeId": "EMP-4821",
+  "companyEmail": "test@acmecorp.com",
+  "tenureYears": 3,
+  "hrApiUrl": "http://localhost:3002/verify",
+  "hrApiKey": "mock-key-for-demo",
+  "aiApiUrl": "https://confidential-ai-dev-preview.cldev.cloud",
+  "aiApiKey": "TS4yJtUgn6KgWsCNtoQtHohLBcxpoHpi1bhCFVdyt2er",
+  "registryAddress": "0x2aa4206aa0b9d2434fa96c5330c17fc23709f597",
+  "chainSelectorName": "ethereum-testnet-sepolia",
+  "gasLimit": "500000"
+}

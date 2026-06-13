@@ -1,0 +1,17 @@
+{
+  "name": "deaddrop-cre-workflow",
+  "version": "1.0.0",
+  "description": "DeadDrop CRE workflow — Chainlink Runtime Environment",
+  "main": "workflow.ts",
+  "scripts": {
+    "simulate": "cre simulate --workflow workflow.ts --input test-input.json",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@chainlink/cre-sdk": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

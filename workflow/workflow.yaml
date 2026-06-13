@@ -1,0 +1,25 @@
+# ==========================================================================
+# DeadDrop — CRE Workflow Settings
+# ETHGlobal NYC 2026
+#
+# Prizes targeted:
+#   - Best CRE Workflow         ($2,000)
+#   - Confidential AI Attester  ($2,000)
+#   - Connect the World         ($1,000)
+# ==========================================================================
+
+staging-settings:
+  user-workflow:
+    workflow-name: "dead-drop-staging"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: ""
+
+production-settings:
+  user-workflow:
+    workflow-name: "dead-drop"
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.production.json"
+    secrets-path: ""

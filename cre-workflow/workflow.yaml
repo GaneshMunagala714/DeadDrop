@@ -1,0 +1,20 @@
+# ==========================================================================
+# DeadDrop — CRE Workflow Settings
+# ETHGlobal NYC 2026
+# ==========================================================================
+
+staging-settings:
+  user-workflow:
+    workflow-name: "dead-drop-demo"
+  workflow-artifacts:
+    workflow-path: "./workflow.ts"
+    config-path: "./config/config.demo.json"
+    secrets-path: ""
+
+production-settings:
+  user-workflow:
+    workflow-name: "dead-drop"
+  workflow-artifacts:
+    workflow-path: "./workflow.ts"
+    config-path: "./config/config.production.json"
+    secrets-path: ""

@@ -1,0 +1,13 @@
+{
+  "schedule": "0 * * * *",
+  "claim": "My manager approved $2M in fraudulent invoices over 6 months. Payments routed to shell company registered to his brother-in-law.",
+  "evidence_summary": "Invoice records show 47 duplicate payments to vendor ID V-2291. Vendor address matches residential property. No goods or services delivered.",
+  "employee_id": "EMP-4821",
+  "company_email": "test@acmecorp.com",
+  "tenure_years": 3,
+  "hr_api_url": "http://localhost:3002/verify",
+  "hr_api_key": "mock-key-for-demo",
+  "ai_api_url": "https://api.openai.com/v1/chat/completions",
+  "ai_api_key": "TS4yJtUgn6KgWsCNtoQtHohLBcxpoHpi1bhCFVdyt2er",
+  "contract_address": "0x2aa4206aa0b9d2434fa96c5330c17fc23709f597"
+}

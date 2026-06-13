@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeadDrop — Provably Anonymous Whistleblowing</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0a0a0f;
+      --surface: #11111a;
+      --surface2: #16161f;
+      --border: #1e1e2e;
+      --accent: #5b6ef5;
+      --accent-glow: rgba(91,110,245,0.25);
+      --green: #00d4aa;
+      --green-glow: rgba(0,212,170,0.15);
+      --red: #ff4757;
+      --yellow: #ffd32a;
+      --text: #e8e8f0;
+      --muted: #5a5a72;
+      --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono: 'SF Mono', 'Fira Code', monospace;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+    /* Layout */
+    .page { max-width: 640px; margin: 0 auto; padding: 48px 20px 80px; }
+
+    /* Header */
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 48px; }
+    .logo-icon { font-size: 22px; }
+    .logo-name { font-size: 20px; font-weight: 800; letter-spacing: -.5px; }
+    .logo-badge {
+      margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: #818cf8;
+      background: rgba(129,140,248,.1); border: 1px solid rgba(129,140,248,.2);
+      border-radius: 999px; padding: 3px 10px;
+    }
+
+    .hero { text-align: center; margin-bottom: 40px; }
+    .hero h1 { font-size: 38px; font-weight: 900; letter-spacing: -.02em; line-height: 1.1; margin-bottom: 14px; }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 14px; line-height: 1.7; max-width: 440px; margin: 0 auto; }
+    .hero .tagline { font-size: 12px; color: var(--green); font-weight: 600; letter-spacing: .05em; margin-top: 10px; }
+
+    /* Card */
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 32px; margin-bottom: 20px;
+    }
+    .card-title { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .card-sub { font-size: 12px; color: var(--muted); margin-bottom: 28px; line-height: 1.5; }
+
+    /* Steps */
+    .steps { display: flex; gap: 8px; margin-bottom: 28px; }
+    .step {
+      flex: 1; height: 3px; border-radius: 999px; background: var(--border);
+      transition: background .3s;
+    }
+    .step.active { background: var(--accent); }
+    .step.done { background: var(--green); }
+
+    /* Field */
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 7px;
+    }
+    .field input, .field textarea, .field select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px; color: var(--text);
+      font-family: var(--font); font-size: 14px; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field textarea { height: 110px; resize: vertical; line-height: 1.6; }
+    .field input:focus, .field textarea:focus {
+      border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .field input::placeholder, .field textarea::placeholder { color: #2a2a3e; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    /* Severity */
+    .severity-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 6px; }
+    .sev-btn {
+      padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--muted); font-size: 12px; font-weight: 600;
+      cursor: default; text-align: center;
+    }
+
+    /* Submit */
+    .submit-btn {
+      width: 100%; background: var(--accent); color: #fff; border: none;
+      border-radius: 12px; padding: 15px; font-size: 15px; font-weight: 700;
+      cursor: pointer; margin-top: 6px; transition: opacity .2s, transform .1s;
+      letter-spacing: -.01em;
+    }
+    .submit-btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
+    .submit-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+    .note { text-align: center; font-size: 11px; color: var(--muted); margin-top: 12px; line-height: 1.6; }
+
+    /* Processing */
+    .processing { display: none; }
+    .processing.show { display: block; }
+    .proc-steps { space-y: 12px; }
+    .proc-step {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 12px; margin-bottom: 8px;
+      border: 1px solid var(--border); background: var(--surface2);
+      font-size: 13px; transition: all .3s;
+    }
+    .proc-step.active { border-color: rgba(91,110,245,.4); background: rgba(91,110,245,.06); }
+    .proc-step.done  { border-color: rgba(0,212,170,.25); background: rgba(0,212,170,.05); }
+    .proc-step.done .step-icon { color: var(--green); }
+    .proc-step.active .step-icon { animation: spin 1s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .step-label { flex: 1; }
+    .step-label .step-title { font-weight: 600; font-size: 13px; }
+    .step-label .step-detail { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .step-tag {
+      font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    .tag-pending { background: rgba(90,90,114,.15); color: var(--muted); }
+    .tag-running { background: rgba(91,110,245,.15); color: #818cf8; }
+    .tag-done    { background: rgba(0,212,170,.12); color: var(--green); }
+
+    /* Result */
+    .result-card {
+      background: var(--surface); border-radius: 20px; padding: 28px;
+      border: 1px solid var(--green); box-shadow: 0 0 32px var(--green-glow);
+      display: none;
+    }
+    .result-card.show { display: block; animation: fadeUp .4s ease; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+    .result-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border);
+    }
+    .result-header .icon { font-size: 20px; }
+    .result-header h3 { font-size: 16px; font-weight: 700; color: var(--green); }
+    .result-header p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .result-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+    }
+    .result-row:last-of-type { border-bottom: none; }
+    .result-row .rk { color: var(--muted); }
+    .result-row .rv { font-weight: 600; font-family: var(--mono); font-size: 12px; }
+    .unknowable { color: var(--green); letter-spacing: 1px; font-size: 11px !important; }
+    .sev1 { color: var(--yellow); }
+    .sev2 { color: #ff9f43; }
+    .sev3 { color: var(--red); }
+    .public-badge { color: var(--red); }
+    .internal-badge { color: #74b9ff; }
+
+    .tx-box {
+      margin-top: 16px; padding: 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 12px;
+    }
+    .tx-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+    .tx-hash { font-family: var(--mono); font-size: 11px; color: #818cf8; word-break: break-all; }
+    .tx-link { font-size: 11px; color: var(--accent); margin-top: 6px; display: inline-block; }
+
+    .proof-note {
+      margin-top: 16px; text-align: center; font-size: 11px; color: var(--muted); line-height: 1.6;
+    }
+
+    .try-again {
+      display: block; text-align: center; margin-top: 20px;
+      font-size: 13px; color: var(--muted); cursor: pointer;
+      text-decoration: underline; text-underline-offset: 3px;
+    }
+    .try-again:hover { color: var(--text); }
+
+    /* Error */
+    .error-box {
+      background: rgba(255,71,87,.07); border: 1px solid rgba(255,71,87,.2);
+      border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #ff6b81;
+      margin-top: 12px; display: none;
+    }
+    .error-box.show { display: block; }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Logo -->
+  <div class="logo">
+    <span class="logo-icon">⬡</span>
+    <span class="logo-name">DeadDrop</span>
+    <span class="logo-badge">Chainlink TEE · ETHGlobal NYC 2026</span>
+  </div>
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Blow the whistle.<br /><span>Not your cover.</span></h1>
+    <p>Your claim goes into a Chainlink TEE. An AI verifies it. Your identity is mathematically stripped before the verdict hits the blockchain.</p>
+    <p class="tagline">SecureDrop asks you to trust a server. DeadDrop gives you cryptographic proof.</p>
+  </div>
+
+  <!-- Form -->
+  <div class="card" id="form-card">
+    <div class="steps">
+      <div class="step active" id="s1"></div>
+      <div class="step" id="s2"></div>
+      <div class="step" id="s3"></div>
+      <div class="step" id="s4"></div>
+    </div>
+    <p class="card-title">Submit a Claim</p>
+    <p class="card-sub">Your employee credentials verify you're an insider. Your identity is stripped inside the TEE before anything leaves.</p>
+
+    <div class="field">
+      <label>Your Claim</label>
+      <textarea id="claim" placeholder="Describe the misconduct in detail. Be specific — the AI will assess credibility based on what you write."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Evidence Summary (optional)</label>
+      <textarea id="evidence" placeholder="Invoice numbers, dates, names of documents, patterns you observed..." style="height:70px"></textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Employee ID</label>
+        <input id="emp_id" placeholder="EMP-4821" />
+      </div>
+      <div class="field">
+        <label>Years at Company</label>
+        <input id="tenure" type="number" placeholder="3" min="0" max="50" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Company Email</label>
+      <input id="email" type="email" placeholder="you@company.com" />
+    </div>
+
+    <div class="error-box" id="error-box"></div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitClaim()">
+      Submit Anonymously →
+    </button>
+    <p class="note">Your IP, email, and employee ID are stripped inside a Chainlink SGX enclave before the verdict is written on-chain.</p>
+  </div>
+
+  <!-- Processing -->
+  <div class="card processing" id="processing-card">
+    <p class="card-title">Processing inside Chainlink TEE</p>
+    <p class="card-sub">4 steps. Your identity is stripped after Step 1. It never reaches the output.</p>
+
+    <div id="proc-steps">
+      <div class="proc-step" id="ps1">
+        <span class="step-icon">🔒</span>
+        <div class="step-label">
+          <div class="step-title">Step 1 — Employee Verification</div>
+          <div class="step-detail">Confidential HTTP → HR system</div>
+        </div>
+        <span class="step-tag tag-pending" id="pt1">Pending</span>
+      </div>
+      <div class="proc-step" id="ps2">
+        <span class="step-icon">🤖</span>
+        <div class="step-label">
+          <div class="step-title">Step 2 — AI Claim Assessment</div>
+          <div class="step-detail">Confidential AI Attester — LLM inside enclave</div>
+        </div>
+        <span class="step-tag tag-pending" id="pt2">Pending</span>
+      </div>
+      <div class="proc-step" id="ps3">
+        <span class="step-icon">🗑</span>
+        <div class="step-label">
+          <div class="step-title">Step 3 — Strip Identity</div>
+          <div class="step-detail">IP, email, employee ID — mathematically removed</div>
+        </div>
+        <span class="step-tag tag-pending" id="pt3">Pending</span>
+      </div>
+      <div class="proc-step" id="ps4">
+        <span class="step-icon">⛓</span>
+        <div class="step-label">
+          <div class="step-title">Step 4 — Post On-Chain Attestation</div>
+          <div class="step-detail">DeadDropRegistry.sol → Sepolia</div>
+        </div>
+        <span class="step-tag tag-pending" id="pt4">Pending</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result-card" id="result-card">
+    <div class="result-header">
+      <span class="icon">✓</span>
+      <div>
+        <h3>Claim Verified &amp; Submitted</h3>
+        <p>Identity stripped inside TEE · Attestation posted on-chain</p>
+      </div>
+    </div>
+
+    <div class="result-row">
+      <span class="rk">Credible</span>
+      <span class="rv" id="r-credible">—</span>
+    </div>
+    <div class="result-row">
+      <span class="rk">Severity</span>
+      <span class="rv" id="r-severity">—</span>
+    </div>
+    <div class="result-row">
+      <span class="rk">Assessment</span>
+      <span class="rv" id="r-reason" style="max-width:280px;text-align:right;font-family:var(--font)">—</span>
+    </div>
+    <div class="result-row">
+      <span class="rk">Routed To</span>
+      <span class="rv" id="r-route">—</span>
+    </div>
+    <div class="result-row">
+      <span class="rk">Your Identity</span>
+      <span class="rv unknowable">UNKNOWABLE</span>
+    </div>
+
+    <div class="tx-box">
+      <div class="tx-label">On-chain attestation TX</div>
+      <div class="tx-hash" id="r-tx">—</div>
+      <a class="tx-link" id="r-tx-link" href="#" target="_blank">View on Etherscan →</a>
+    </div>
+
+    <p class="proof-note">Anyone in the world can verify this proof. No one can trace it back to you.</p>
+    <a class="try-again" onclick="reset()">← Submit another claim</a>
+  </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:3001';
+
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+function setStep(n, state) {
+  const el = document.getElementById('ps' + n);
+  const tag = document.getElementById('pt' + n);
+  el.className = 'proc-step ' + state;
+  if (state === 'active') { tag.className = 'step-tag tag-running'; tag.textContent = 'Running…'; }
+  if (state === 'done')   { tag.className = 'step-tag tag-done';    tag.textContent = 'Done'; }
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = msg;
+  box.className = 'error-box show';
+}
+
+async function submitClaim() {
+  const claim    = document.getElementById('claim').value.trim();
+  const evidence = document.getElementById('evidence').value.trim();
+  const emp_id   = document.getElementById('emp_id').value.trim();
+  const email    = document.getElementById('email').value.trim();
+  const tenure   = document.getElementById('tenure').value.trim();
+
+  document.getElementById('error-box').className = 'error-box';
+
+  if (!claim) return showError('Please describe your claim.');
+  if (!emp_id) return showError('Employee ID is required to verify insider status.');
+
+  // Show processing
+  document.getElementById('form-card').style.display = 'none';
+  document.getElementById('processing-card').className = 'card processing show';
+
+  // Animate steps with real timing
+  setStep(1, 'active');
+  await delay(800);
+  setStep(1, 'done');
+
+  setStep(2, 'active');
+
+  let result;
+  try {
+    const res = await fetch(`${API}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        claim,
+        evidence_summary: evidence,
+        employee_proof: { employee_id: emp_id, company_email: email, tenure_years: parseInt(tenure) || 0 }
+      })
+    });
+    result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Submission failed');
+  } catch (err) {
+    document.getElementById('processing-card').className = 'card processing';
+    document.getElementById('form-card').style.display = 'block';
+    showError(err.message);
+    return;
+  }
+
+  setStep(2, 'done');
+  setStep(3, 'active');
+  await delay(600);
+  setStep(3, 'done');
+  setStep(4, 'active');
+  await delay(900);
+  setStep(4, 'done');
+  await delay(400);
+
+  // Show result
+  document.getElementById('processing-card').className = 'card processing';
+
+  const a = result.attestation;
+  document.getElementById('r-credible').textContent = a.credible ? '✓ Yes' : '✗ No';
+  document.getElementById('r-severity').innerHTML = `<span class="sev${a.severity}">Level ${a.severity} — ${a.severity===1?'Minor':a.severity===2?'Serious':'Critical'}</span>`;
+  document.getElementById('r-reason').textContent = a.reason;
+  document.getElementById('r-route').innerHTML = a.route === 'public'
+    ? '<span class="public-badge">Public Disclosure</span>'
+    : '<span class="internal-badge">Internal Channel</span>';
+
+  const tx = result.tx_hash || '';
+  document.getElementById('r-tx').textContent = tx;
+  const link = document.getElementById('r-tx-link');
+  if (!result.tx_simulated && tx) {
+    link.href = `https://sepolia.etherscan.io/tx/${tx}`;
+    link.textContent = 'View on Etherscan →';
+  } else {
+    link.href = '#';
+    link.textContent = result.tx_simulated ? '(simulated — add wallet to go live)' : '';
+  }
+
+  document.getElementById('result-card').className = 'result-card show';
+}
+
+function reset() {
+  document.getElementById('result-card').className = 'result-card';
+  document.getElementById('form-card').style.display = 'block';
+  document.getElementById('claim').value = '';
+  document.getElementById('evidence').value = '';
+  for (let i=1;i<=4;i++) {
+    document.getElementById('ps'+i).className='proc-step';
+    const t=document.getElementById('pt'+i);
+    t.className='step-tag tag-pending'; t.textContent='Pending';
+  }
+}
+</script>
+</body>
+</html>
