@@ -119,6 +119,12 @@ type InferenceResponse = {
 const POLL_INTERVAL_MS = 5000
 const MAX_POLL_ATTEMPTS = 20
 
+// runtime.sleep() is implemented by the host (sdk/wasm/host-bindings.js) but not
+// declared on the public Runtime<C> type — access it via the underlying impl.
+function sleep(runtime: Runtime<Config>, ms: number): void {
+	(runtime as unknown as { sleep: (ms: number) => void }).sleep(ms)
+}
+
 function callConfidentialAI(
 	runtime: Runtime<Config>,
 	systemPrompt: string,
@@ -165,7 +171,7 @@ function callConfidentialAI(
 		runtime.log(`[INCOGNITO]   inference ${result.id} queued, polling for completion...`)
 
 		for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
-			runtime.sleep(POLL_INTERVAL_MS)
+			sleep(runtime, POLL_INTERVAL_MS)
 
 			const pollResp = http.sendRequest(runtime, {
 				request: {
